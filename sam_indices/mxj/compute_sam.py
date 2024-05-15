@@ -19,9 +19,9 @@ msl = xr.open_mfdataset(era_base+'single-levels/monthly-averaged/msl/*/*.nc',pre
 time = msl.time
 
 
-# Marshall index
+# Gong and Wang index
 sam_marshall = ac.ClimateIndex(msl.msl,index='sam')
-sam_marshall.name = 'marshall'
+sam_marshall.name = 'gong_wang' 
 sam_marshall = sam_marshall.assign_coords(time=time)
 sams.append(sam_marshall)
 
