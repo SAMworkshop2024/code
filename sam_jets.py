@@ -1,24 +1,39 @@
 import xarray as xr
 from aostools import climate as ac
 import numpy as np
+import scipy.signal as sg
 
 level = 300
 proj = 'Robinson'
 latslice = {'lat':slice(-90,20)}
-overlap = True
+
+threshold = 1.0
 
 plot_seasons = ['DJF','JJA']
+
+detrend = False # makes no difference
+
+def detrend_x(x):
+    return ac.Detrend(x,'time','linear',keep_mean=True)
+
+
+overlap = True
 
 era_base = '/g/data/rt52/era5/'
 
 sam = xr.open_dataarray('/scratch/v45/SAMworkshop2024/data/SAM_GW_1m_1979-2023.nc')
+if detrend:
+    sam = sam.groupby('time.season').map(detrend_x)
 
 def ReadERA(ds):
     ds = ac.StandardGrid(ds,rename=True)
     return ds.sel(pres=level).sel(latslice)
 
+
 u = xr.open_mfdataset(era_base+'pressure-levels/monthly-averaged/u/*/*',preprocess=ReadERA)
 u = u.sel(time=slice(sam.time[0],sam.time[-1])).u.load()
+if detrend:
+    u = u.groupby('time.season').map(detrend_x)
 
 MAMJJA = (sam['time.month']>=3)*(sam['time.month']<=8)
 SONDJF = np.invert(MAMJJA)
@@ -28,8 +43,8 @@ MAM = sam['time.season'] == 'MAM'
 JJA = sam['time.season'] == 'JJA'
 SON = sam['time.season'] == 'SON'
 
-SAMneg = sam < -0.2
-SAMpos = sam >  0.2
+SAMneg = sam < -threshold
+SAMpos = sam >  threshold
 
 filtr = {'SONDJF, SAM < 0' : SONDJF*SAMneg,
          'SONDJF,_SAM > 0' : SONDJF*SAMpos,
@@ -38,14 +53,14 @@ filtr = {'SONDJF, SAM < 0' : SONDJF*SAMneg,
         }
 nrows = 2
 
-filtr2 = {'DJF, SAM < 0' : DJF*SAMneg,
-          'DJF, SAM > 0' : DJF*SAMpos,
-          'MAM, SAM < 0' : MAM*SAMneg,
-          'MAM, SAM > 0' : MAM*SAMpos,
-          'JJA, SAM < 0' : JJA*SAMneg,
-          'JJA, SAM > 0' : JJA*SAMpos,
-          'SON, SAM < 0' : SON*SAMneg,
-          'SON, SAM > 0' : SON*SAMpos
+filtr2 = {'DJF, SAM < {0}'.format(-threshold) : DJF*SAMneg,
+          'DJF, SAM > {0}'.format(threshold) : DJF*SAMpos,
+          'MAM, SAM < {0}'.format(-threshold) : MAM*SAMneg,
+          'MAM, SAM > {0}'.format(threshold) : MAM*SAMpos,
+          'JJA, SAM < {0}'.format(-threshold) : JJA*SAMneg,
+          'JJA, SAM > {0}'.format(threshold) : JJA*SAMpos,
+          'SON, SAM < {0}'.format(-threshold) : SON*SAMneg,
+          'SON, SAM > {0}'.format(threshold) : SON*SAMpos
           }
 nrows = len(plot_seasons)
 
@@ -69,21 +84,21 @@ if overlap:
     sams = np.unique([s.split(', ')[-1] for s in keys])
     for a in range(len(plot_seasons)):
         season = seasons[a]
-        polarity = 'SAM > 0'
+        polarity = 'SAM > {0}'.format(threshold)
         key = '{0}, {1}'.format(season,polarity)
         ax = axs[a][0]
         upos = u.isel(time=fltr[key]).mean('time')
         cl = upos.plot.contourf(levels=11,ax=ax,vmin=10,vmax=40,cmap='Reds',add_colorbar=False,**transf) 
         ax.set_title(key)
         ax.coastlines()  
-        key = key.replace('>','<')
+        key = key.replace('>','<').replace('{0}'.format(threshold),'{0}'.format(-threshold))
         ax = axs[a][1]
         uneg = u.isel(time=fltr[key]).mean('time')
         cl = uneg.plot.contourf(levels=11,ax=ax,vmin=10,vmax=40,cmap='Reds',add_colorbar=False,**transf)
         ax.set_title(key)
         ax.coastlines()  
         ax = axs[a][2]
-        cd = (upos-uneg).plot(levels=13,ax=ax,cmap='RdBu_r',vmin=-6,add_colorbar=False,**transf) 
+        cd = (upos-uneg).plot(levels=11,ax=ax,cmap='RdBu_r',vmin=-10,add_colorbar=False,**transf) 
         ax.set_title('difference')
         ax.coastlines()  
 else:
@@ -99,7 +114,9 @@ if overlap:
     ac.AddColorbar(fig,axs,cd,shrink=0.8,cbar_args={'label':'u300 [m/s]'})
 ac.AddColorbar(fig,axs,cl,shrink=0.8,cbar_args={'label':'u300 [m/s]','location':'left'})
 ac.AddPanelLabels(axs,'lower left')
-fig.suptitle('300hPa zonal wind, ERA5 1979-2023')
-outFile = 'SAM_u300.pdf'
+fig.suptitle('{0}hPa zonal wind, ERA5 1979-2023'.format(level))
+outFile = 'SAM_u{1}_SAM{0}.pdf'.format(threshold,level)
+if detrend:
+    outFile = outFile.replace('.pdf','_detrend.pdf')
 fig.savefig(outFile,bbox_inches='tight')
 print(outFile)
