@@ -15,7 +15,7 @@ temp_mjjaso1 = temp.sel(time=temp['time.month'].isin(months_mjjaso))
 
 temp_ndjfma=temp_ndjfma1[0]
 for i in range(len(years.year)):
-    temp = temp_ndjfma1.sel(time=slice(str(years.year[i])+'-11-01', str(years.year[i]+1)+'-02-28')).mean('time')
+    temp = temp_ndjfma1.sel(time=slice(str(years.year[i])+'-11-01', str(years.year[i]+1)+'-04-30')).mean('time')
     temp_ndjfma =xr.concat([temp_ndjfma, temp],dim='years')
 
 temp_ndjfma=temp_ndjfma[1:].assign_coords(years=years)
@@ -42,7 +42,7 @@ precip_mjjaso1 = precip.sel(time=precip['time.month'].isin(months_mjjaso))
 
 precip_ndjfma=precip_ndjfma1[0]
 for i in range(len(years.year)):
-    precip = precip_ndjfma1.sel(time=slice(str(years.year[i])+'-11-01', str(years.year[i]+1)+'-02-28')).mean('time')
+    precip = precip_ndjfma1.sel(time=slice(str(years.year[i])+'-11-01', str(years.year[i]+1)+'-04-30')).mean('time')
     precip_ndjfma =xr.concat([precip_ndjfma, precip],dim='years')
 
 precip_ndjfma=precip_ndjfma[1:].assign_coords(years=years)
@@ -71,7 +71,7 @@ sic_mjjaso1 = sea_ice_extent.sel(dim_0=sea_ice_extent['dim_0.month'].isin(months
 
 sic_ndjfma=sic_ndjfma1[0]
 for i in range(len(years.year)):
-    sic = sic_ndjfma1.sel(dim_0=slice(str(years.year[i])+'-11-01', str(years.year[i]+1)+'-02-28')).mean('dim_0')
+    sic = sic_ndjfma1.sel(dim_0=slice(str(years.year[i])+'-11-01', str(years.year[i]+1)+'-04-30')).mean('dim_0')
     sic_ndjfma =xr.concat([sic_ndjfma, sic],dim='years')
 
 sic_ndjfma=sic_ndjfma[1:].assign_coords(years=years)
@@ -96,7 +96,7 @@ wind_mjjaso1 = wind.sel(time=wind['time.month'].isin(months_mjjaso))
 
 wind_ndjfma=wind_ndjfma1[0]
 for i in range(len(years.year)):
-    wind = wind_ndjfma1.sel(time=slice(str(years.year[i])+'-11-01', str(years.year[i]+1)+'-02-28')).mean('time')
+    wind = wind_ndjfma1.sel(time=slice(str(years.year[i])+'-11-01', str(years.year[i]+1)+'-04-30')).mean('time')
     wind_ndjfma =xr.concat([wind_ndjfma, wind],dim='years')
 
 wind_ndjfma=wind_ndjfma[1:].assign_coords(years=years)
@@ -121,7 +121,7 @@ vwind_mjjaso1 = vwind.sel(time=vwind['time.month'].isin(months_mjjaso))
 
 vwind_ndjfma=vwind_ndjfma1[0]
 for i in range(len(years.year)):
-    vwind = vwind_ndjfma1.sel(time=slice(str(years.year[i])+'-11-01', str(years.year[i]+1)+'-02-28')).mean('time')
+    vwind = vwind_ndjfma1.sel(time=slice(str(years.year[i])+'-11-01', str(years.year[i]+1)+'-04-30')).mean('time')
     vwind_ndjfma =xr.concat([vwind_ndjfma, vwind],dim='years')
 
 vwind_ndjfma=vwind_ndjfma[1:].assign_coords(years=years)
@@ -144,7 +144,7 @@ sam_mjjaso1 = sam.sel(time=sam['time.month'].isin(months_of_interest))
 
 sam_ndjfma=sam_ndjfma1[0]
 for i in range(len(years.year)):
-    temp = sam_ndjfma1.sel(time=slice(str(years.year[i])+'-11-01', str(years.year[i]+1)+'-02-28')).mean('time')
+    temp = sam_ndjfma1.sel(time=slice(str(years.year[i])+'-11-01', str(years.year[i]+1)+'-04-30')).mean('time')
     sam_ndjfma =xr.concat([sam_ndjfma, temp],dim='years')
 
 sam_ndjfma=sam_ndjfma[1:].assign_coords(years=years)
