@@ -102,6 +102,9 @@ model_mean <-  sam |>
   _[, fit_segmented(sam ~ `1979--1999` + `2000--2014`), by = .(model, forcing,  season(time))] |> 
   _[, expand := qt(1 - 0.025, df)] 
 
+fwrite(model_mean, "cmip-damip/plot-data/model-mean_trend.csv")
+
+fwrite(mmm_trend, "cmip-damip/plot-data/mmm_trend.csv")
 
 
 # plot --------------------------------------------------------------------
@@ -135,5 +138,5 @@ model_mean |>
         panel.background = element_rect(color = NA, fill = "#FAFAFA"))
 
 # Save all the data for the plot
-ggdatasaver::save_plot_data(last_plot(), name = "cmip-boxplot", dir =  "cmip-boxplot")
+ggdatasaver::save_plot_data(last_plot(), name = "cmip-boxplot", dir =  "cmip-damip/plot-data")
 
