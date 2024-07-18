@@ -56,18 +56,25 @@ sam_index <- mslp[lat %~% c(-40, -65)] |>   # sea level pressure from ERA5 at -6
   _[, .(sam = `-40` - `-65` ), by = time] 
 
 
+# Regression map of MSLP anomalies with SAM index
 sam_map <- mslp |> 
-  _[, msl := msl - mean(msl[year(time) %between% climatology]), by = .(lat, lon, season(time))] |> 
+  # Compute monthly anomalies wrt climatology
+  _[, msl := msl - mean(msl[year(time) %between% climatology]), by = .(lat, lon, month(time))] |> 
   _[sam_index, on = 'time'] |> 
+  # Linear model for each month and gridpoint
   _[, FitLm(msl, sam), by = .(lat, lon, month(time))] |> 
   _[term == "sam"]
 
 
 variances <- sam_map |> 
   na.omit() |> 
-  _[, estimate_a := estimate - mean(estimate), by = .(month, lat)] |>
-  _[, .(asym = modi::weighted.var(estimate_a, sqrt(cos(lat*pi/180)))/modi::weighted.var(estimate, sqrt(cos(lat*pi/180))),
-        sym = modi::weighted.var(estimate - estimate_a, sqrt(cos(lat*pi/180)))/modi::weighted.var(estimate, sqrt(cos(lat*pi/180)))),
+  # Compute the asymmetric part of the map
+  _[, asym := estimate - mean(estimate), by = .(month, lat)] |>
+  _[, sym := estimate - asym, by = .(month, lat)] |>
+  # Vexplaind variances is the variance of each part divided by the total variance. 
+  # We need to weight the variance too. 
+  _[, .(asym = modi::weighted.var(asym, sqrt(cos(lat*pi/180)))/modi::weighted.var(estimate, sqrt(cos(lat*pi/180))),
+        sym = modi::weighted.var(sym, sqrt(cos(lat*pi/180)))/modi::weighted.var(estimate, sqrt(cos(lat*pi/180)))),
     by = month] |> 
   tidyfast::dt_pivot_longer(cols = asym:sym) 
 
