@@ -8,7 +8,23 @@ level = 300
 proj = 'Robinson'
 latslice = {'lat':slice(-90,0)}
 
-threshold = 0.0
+threshold = 2
+
+vmins = {'2.0': -9,
+         '1.5': -9,
+         '1.0': -6,
+         '0.0': -6,
+         }
+
+vticks = {'2.0': [-9.,-5,-1,1,5,9],
+         '1.5':  [-9.,-5,-1,1,5,9],
+         '1.0': [-6.,-4,-2,2,4,6],
+         '0.0': [-6.,-4,-2,2,4,6],
+         }
+
+nlevs = {'full':10,
+         'anom':10,
+         }
 
 plot_seasons = ['DJF','JJA']
 
@@ -69,7 +85,8 @@ filtr2 = {'DJF, SAM < {0}'.format(-threshold) : DJF*SAMneg,
           'SON, SAM < {0}'.format(-threshold) : SON*SAMneg,
           'SON, SAM > {0}'.format(threshold) : SON*SAMpos
           }
-nrows = len(plot_seasons)
+#nrows = len(plot_seasons)
+ncols = len(plot_seasons)+1
 
 #if nrows == 4:
 fltr = filtr2
@@ -79,14 +96,14 @@ fltr = filtr2
 #if overlap:
 #    nrows = nrows//2
     
-ncols = 3
-nlevs = 10
+#ncols = 3
+nrows = 2
 fig,axs,transf = ac.Projection(proj,ncols=ncols,nrows=nrows,kw_args={'central_longitude':155})
 fig.set_figheight(nrows*1.1)
 fig.set_figwidth(ncols*4*1.2)
 
 keys = sorted(list(fltr.keys()))
-
+ttlesize = 'small'
 if overlap:
     seasons = np.unique([k.split(',')[0] for k in keys])
     sams = np.unique([s.split(', ')[-1] for s in keys])
@@ -95,22 +112,30 @@ if overlap:
         polarity = 'SAM > {0}'.format(threshold)
         key = '{0}, {1}'.format(season,polarity)
         ax = axs[a][0]
+        #ax = axs[0][a]
         upos = u.isel(time=fltr[key]).mean('time')
-        cl = upos.plot.contourf(levels=nlevs,ax=ax,vmin=10,vmax=40,cmap='Reds',add_colorbar=False,**transf) 
-        ax.set_title(key)
-        ax.coastlines()  
-        key = key.replace('>','<').replace('{0}'.format(threshold),'{0}'.format(-threshold))
+        cl = upos.plot.contourf(levels=nlevs['full'],ax=ax,vmin=10,vmax=40,cmap='Reds',add_colorbar=False,**transf) 
+        #ax.set_title(key)
+        ax.set_title(key.replace(polarity,'positive SAM'),fontsize=ttlesize)
+        ax.coastlines()
+        polarity = polarity.replace('>','<').replace('{0}'.format(threshold),'{0}'.format(-threshold))
+        key = '{0}, {1}'.format(season,polarity)
         ax = axs[a][1]
+        #ax = axs[1][a]
         uneg = u.isel(time=fltr[key]).mean('time')
-        cl = uneg.plot.contourf(levels=nlevs,ax=ax,vmin=10,vmax=40,cmap='Reds',add_colorbar=False,**transf)
-        ax.set_title(key)
+        cl = uneg.plot.contourf(levels=nlevs['full'],ax=ax,vmin=10,vmax=40,cmap='Reds',add_colorbar=False,**transf)
+        #ax.set_title(key)
+        ax.set_title(key.replace(polarity,'negative SAM'),fontsize=ttlesize)
         ax.coastlines()  
-        ax = axs[a][2]
-        cd = (upos-uneg).plot.contourf(levels=nlevs,ax=ax,vmin=-6,cmap='RdBu_r',extend='both',add_colorbar=False,**transf) 
-        ax.set_title('{0}, difference'.format(season))
+        ax = axs[a][2] 
+        #ax = axs[2][a]
+        cd = (upos-uneg).plot.contourf(levels=nlevs['anom'],ax=ax,vmin=vmins['{0:3.1f}'.format(threshold)],cmap='RdBu_r',extend='both',add_colorbar=False,**transf) 
+        #ax.set_title('{0}, difference'.format(season))
+        ax.set_title('difference',fontsize=ttlesize)
         ax.coastlines()
         # there's a bug where the last axes show the whole globe
         axs[a][2].set_ylim(axs[0][0].get_ylim())
+        #axs[2][a].set_ylim(axs[0][0].get_ylim())
 else:
     for a,ax in enumerate(axs.flat):
         key = keys[a]
@@ -121,9 +146,13 @@ else:
         ax.set_title(key)
         ax.coastlines()
 if overlap:
-    ac.AddColorbar(fig,axs,cd,shrink=0.8,cbar_args={'label':'zonal wind difference [ms-1]'})
-ac.AddColorbar(fig,axs,cl,shrink=0.8,cbar_args={'label':'zonal wind [ms-1]','location':'left'})
-ac.AddPanelLabels(axs,'lower left')
+    cb = ac.AddColorbar(fig,axs,cd,shrink=0.8,cbar_args={'ticks':vticks['{0:3.1f}'.format(threshold)],'format':'%g'})
+    cb.set_label('zonal wind difference [ms-1]',size='x-small')
+    cb.ax.tick_params(labelsize='small')
+cb = ac.AddColorbar(fig,axs,cl,shrink=0.8,cbar_args={'location':'left','ticks':[10,20,30,40],'format':'%g'})
+cb.set_label(label='zonal wind [ms-1]',size='x-small')
+cb.ax.tick_params(labelsize='small' )
+ac.AddPanelLabels(axs,'upper left',ypos=1.4,size='large',style='',weight='bold')
 fig.suptitle('Seasonal {0}hPa zonal wind by SAM phase'.format(level))
 outFile = 'SAM_u{1}_SAM{0}.pdf'.format(threshold,level)
 if detrend:
