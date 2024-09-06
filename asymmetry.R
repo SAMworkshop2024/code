@@ -65,6 +65,7 @@ sam_map <- mslp |>
   _[, FitLm(msl, sam), by = .(lat, lon, month(time))] |> 
   _[term == "sam"]
 
+fwrite(sam_map, "sam_maps.csv")
 
 variances <- sam_map |> 
   na.omit() |> 
@@ -77,6 +78,8 @@ variances <- sam_map |>
         sym = modi::weighted.var(sym, sqrt(cos(lat*pi/180)))/modi::weighted.var(estimate, sqrt(cos(lat*pi/180)))),
     by = month] |> 
   tidyfast::dt_pivot_longer(cols = asym:sym) 
+
+fwrite(variances, "sam_variances.csv")
 
 variances |> 
   ggplot(aes(month, value)) +
