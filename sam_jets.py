@@ -101,7 +101,7 @@ fltr = filtr2
 #nrows = 2
 nrows = 3
 fig,axs,transf = ac.Projection(proj,ncols=ncols,nrows=nrows,kw_args={'central_longitude':155})
-fig.set_figheight(nrows*1.5)
+fig.set_figheight(nrows*2.0)
 fig.set_figwidth(ncols*4)
 
 keys = sorted(list(fltr.keys()))
@@ -154,22 +154,22 @@ else:
         cl = u.isel(time=fltr[key]).mean('time').plot.contourf(levels=11,ax=ax,vmin=10,vmax=50,cmap='Reds',add_colorbar=False,**transf)
         ax.set_title(key)
         ax.coastlines()
-colbarargs = {'format':'%g','orientation':'horizontal'}
+#colbarargs = {'format':'%g','orientation':'horizontal'}
 if overlap:
-    cbax = fig.add_subplot(nrows+1,ncols,nrows*ncols+1)
-    cb = fig.colorbar(cd,ax=cbax,ticks=vticks['{0:3.1f}'.format(threshold)],**colbarargs)
-    #cb = ac.AddColorbar(fig,axs,cd,shrink=0.4,cbar_args={'ticks':vticks['{0:3.1f}'.format(threshold)],'format':'%g','orientation':'horizontal','anchor':(0,0)})
-    cb.set_label('zonal wind difference [ms-1]',size='small')
+    #cbax = fig.add_subplot(nrows+1,ncols,nrows*ncols+1)
+    #cb = fig.colorbar(cd,ax=cbax,ticks=vticks['{0:3.1f}'.format(threshold)],**colbarargs)
+    cb = ac.AddColorbar(fig,axs,cd,shrink=0.5,cbar_args={'ticks':vticks['{0:3.1f}'.format(threshold)],'format':'%g','orientation':'horizontal','pad':0.01})
+    cb.set_label(r'Zonal wind difference (ms$^{-1}$)',size='small')
     cb.ax.tick_params(labelsize='small')
-    cbax.axis('off')
-cbax = fig.add_subplot(nrows+1,ncols,nrows*ncols+2)
-cb = fig.colorbar(cl,ax=cbax,ticks=[10,20,30,40],**colbarargs)
-#cb = ac.AddColorbar(fig,axs,cl,shrink=0.4,cbar_args={'ticks':[10,20,30,40],'format':'%g','orientation':'horizontal','anchor':(1,0)})
-cb.set_label(label='zonal wind [ms-1]',size='small')
+    #cbax.axis('off')
+#cbax = fig.add_subplot(nrows+1,ncols,nrows*ncols+2)
+#cb = fig.colorbar(cl,ax=cbax,ticks=[10,20,30,40],**colbarargs)
+cb = ac.AddColorbar(fig,axs,cl,shrink=0.5,cbar_args={'ticks':[10,20,30,40],'format':'%g','orientation':'horizontal','pad':0.05})
+cb.set_label(label=r'Zonal wind (ms$^{-1}$)',size='small')
 cb.ax.tick_params(labelsize='small' )
-cbax.axis('off')
+#cbax.axis('off')
 #ac.AddPanelLabels(axs,'upper left',ypos=1.4,size='large',style='',weight='bold')
-ac.AddPanelLabels(axs,'upper left',ypos=1.28,xpos=0,style='',weight='bold',size=ttlesize)
+ac.AddPanelLabels(axs,'upper left',ypos=1.27,xpos=0,style='',weight='bold',size=ttlesize)
 #fig.suptitle('Seasonal {0}hPa zonal wind by SAM phase'.format(level))
 outFile = 'SAM_u{1}_SAM{0}.pdf'.format(threshold,level)
 if detrend:
