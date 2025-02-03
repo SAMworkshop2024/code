@@ -30,7 +30,7 @@ ui <- fluidPage(
       
       # Checkbox for common models
       checkboxInput("common_models",
-                    "Use Common Models Only",
+                    "Only models with all forcings?",
                     value = TRUE),
       
       # Add a plot button to prevent excessive recomputation
