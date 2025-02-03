@@ -5,7 +5,7 @@ library(data.table)
 
 # historical --------------------------------------------------------------
 
-files_historical <- list.files("sam_indices/cmip6", full.names = TRUE)
+files_historical <- list.files("sam_indices/cmip6", full.names = TRUE, pattern = "*.nc")
 
 
 historical <- basename(files_historical) |>
