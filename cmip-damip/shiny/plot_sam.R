@@ -1,8 +1,32 @@
 
 # Function to compute estimates and standard errors of the slopes
 # of segmented regression.
-fit_segmented <- function(formula, data = NULL) {
-  mod <- lm(formula, data = data)
+# fit_segmented <- function(formula, data = NULL) {
+#   mod <- lm(formula, data = data)
+#   coef <- cumsum(coef(mod)[-1])
+#   terms <- names(coef)
+#   
+#   list(
+#     period = terms,
+#     estimate = coef,
+#     se = c(
+#       sqrt(vcov(mod)[2:2, 2:2]),
+#       sqrt(sum(vcov(mod)[2:3, 2:3]))
+#     ),
+#     df = rep(mod$df.residual, 2)
+#   )
+# }
+# 
+fit_segmented_ <- function(time, sam, cut_year) {
+  data <- data.table(time = time, sam = sam) |> 
+    copy() |> 
+    _[, let(
+      first_period = year(time),
+      second_period = pmax(year(time) - cut_year, 0)
+    )] |>
+    na.omit()
+  
+  mod <- lm(sam ~ first_period + second_period, data = data)
   coef <- cumsum(coef(mod)[-1])
   terms <- names(coef)
   
@@ -17,6 +41,30 @@ fit_segmented <- function(formula, data = NULL) {
   )
 }
 
+fit_segmented <- memoise::memoise(fit_segmented_)
+
+fir_normal_impl <- function(time, sam) {
+  data <- data.table(time = year(time), sam = sam)
+  mod <- lm(sam ~ time, data = data)
+  coef <- coef(mod)[-1]
+  
+  list(
+    estimate = coef,
+    se = summary(mod)$coefficients[2, 2],
+    df = mod$df.residual
+  )
+}
+
+fit_normal_ <- function(time, sam, cut_year) {
+  data <- data.table(time = time, sam = sam) |> 
+    copy() |> 
+    _[, let(period = ifelse(year(time) < cut_year, "first_period", "second_period"))] |>
+    na.omit() |> 
+    _[, fir_normal_impl(time, sam), by = period]
+  
+}
+
+fit_normal <- memoise::memoise(fit_normal_)
 
 seasonally <- function (x) {
   if (is.character(x)) 
@@ -47,15 +95,7 @@ season <- function (x, lang = c("en", "es")) {
   return(factor(seasons[x], levels = c(djf, mam, jja, son)))
 }
 
-
-plot_sam <- function(data,
-                     seasons = c("DJF", "MAM", "JJA", "SON"),
-                     cut_year = 1999,
-                     common_models = TRUE) {
-  
-  
-  data <- data[season(time) %in% seasons]
-  
+select_models_ <- function(data, common_models = TRUE) {
   if (common_models) {
     models <- data |> 
       dcast(model ~ forcing, fill = NA) |> 
@@ -65,35 +105,50 @@ plot_sam <- function(data,
     data <- data[model %in% models]
   }
   
-  mmm_trend <- data |>
-    _[, .(sam = mean(sam, na.rm = TRUE)), by = .(model, forcing, time = seasonally(time))] |>
-    _[, .(sam = mean(sam, na.rm = TRUE)), by = .(forcing, time = seasonally(time))] |>
-    _[, let(
-      first_period = year(time),
-      second_period = pmax(year(time) - cut_year, 0),
-      year = year(time)
-    )] |>
-    na.omit() |>
-    _[, fit_segmented(sam ~ first_period + second_period), by = .(forcing, season(time))] |>
+  return(data)
+}
+
+select_models <- memoise::memoise(select_models_)
+
+select_season <- function(data, seasons = c("DJF", "MAM", "JJA", "SON")) {
+  data[season %in% seasons]
+}
+
+
+plot_sam_ <- function(data,
+                      cut_year = 1999,
+                      continuous = TRUE) {
+
+  if (continuous) {
+    fit <- fit_segmented
+    trends <- geom_smooth(se = FALSE, linewidth = 0.8,
+                          method = "lm", formula = y ~ x + pmax(x - cut_year, 0))
+  } else {
+    fit <- fit_normal
+    trends <- geom_smooth(aes(group = interaction(forcing, year(time) < cut_year)), 
+                          se = FALSE, method = "lm", formula = y ~ x) 
+  }
+  
+  model_mean <- data |>
+    _[, .(sam = mean(sam, na.rm = TRUE)), by = .(model, forcing, time = seasonally(time))]
+  
+  mmm_mean <- model_mean |>
+    _[, .(sam = mean(sam, na.rm = TRUE)), by = .(forcing, time = seasonally(time))] 
+  
+  mmm_trend <- mmm_mean |> 
+    _[, fit(time, sam, cut_year), by = .(forcing, season(time))] |>
     _[, expand := qt(1 - 0.025, df)]
   
   
-  model_mean <- data |>
-    _[, .(sam = mean(sam, na.rm = TRUE)), by = .(model, forcing, time = seasonally(time))] |>
-    _[, let(
-      first_period = year(time),
-      second_period = pmax(year(time) - cut_year, 0),
-      year = year(time)
-    )] |>
-    na.omit() |>
-    _[, fit_segmented(sam ~ first_period + second_period), by = .(model, forcing, season(time))] |>
+  model_mean <- model_mean |>
+    _[, fit(time, sam, cut_year), by = .(forcing, model, season(time))] |>
     _[, expand := qt(1 - 0.025, df)]
   
   
   trend_labels <- c(first_period = paste0("1979--", cut_year),
                     second_period = paste0(cut_year + 1, "--2014"))
   
-  model_mean |>
+  boxplot <- model_mean |>
     ggplot(aes(forcing, estimate * 10)) +
     geom_tile(
       data = mmm_trend, aes(
@@ -129,4 +184,27 @@ plot_sam <- function(data,
       legend.position.inside = c(0.7, 0.1),
       panel.background = element_rect(color = NA, fill = "#FAFAFA")
     )
+  
+  
+  
+  lineplot <- mmm_mean |> 
+    ggplot(aes(year(time), sam,color = forcing)) +
+    geom_line(alpha = 0.6) +
+    trends + 
+    facet_wrap(~season(time)) +
+    scale_color_brewer(NULL, palette = "Set1") +
+    scale_x_continuous(NULL) +
+    scale_y_continuous(NULL) +
+    guides(color = guide_legend(position = "bottom")) +
+    theme_minimal(base_size = 16) +
+    theme(
+      legend.position.inside = c(0.7, 0.1),
+      panel.background = element_rect(color = NA, fill = "#FAFAFA")
+    )
+  
+  
+  list(boxplot = boxplot, 
+       lineplot = lineplot)
+  
 }
+plot_sam <- memoise::memoise(plot_sam_)
