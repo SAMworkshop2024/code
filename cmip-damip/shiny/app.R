@@ -50,6 +50,9 @@ server <- function(input, output) {
   sam_data <- readRDS("sam-cmip6.Rds")[year(time) %between% c(1979, 2014)]
   sam_data[, season := season(time)]
   
+  sam_data[, forcing := factor(forcing, 
+                               levels = c("historical", "hist-GHG", "hist-stratO3"))]
+  
   data_models <- reactive(select_models(sam_data, input$common_models))
   data_season <- reactive(select_season(data_models(), input$seasons))
 
