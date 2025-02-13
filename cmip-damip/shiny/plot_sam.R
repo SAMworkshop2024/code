@@ -27,22 +27,21 @@ fit_segmented_ <- function(time, sam, cut_year) {
     na.omit()
   
   mod <- lm(sam ~ first_period + second_period, data = data)
-# fit_segmented <- function(formula, data = NULL) {
-#   mod <- lm(formula, data = data)
-#   coef <- cumsum(coef(mod)[-1])
-#   terms <- names(coef)
-#   
-#   list(
-#     period = terms,
-#     estimate = coef,
-#     se = c(
-#       sqrt(vcov(mod)[2:2, 2:2]),
-#       sqrt(sum(vcov(mod)[2:3, 2:3]))
-#     ),
-#     df = rep(mod$df.residual, 2)
-#   )
-# }
-# 
+
+  coef <- cumsum(coef(mod)[-1])
+  terms <- names(coef)
+
+  list(
+    period = terms,
+    estimate = coef,
+    se = c(
+      sqrt(vcov(mod)[2:2, 2:2]),
+      sqrt(sum(vcov(mod)[2:3, 2:3]))
+    ),
+    df = rep(mod$df.residual, 2)
+  )
+}
+
 fit_segmented_ <- function(time, sam, cut_year) {
   data <- data.table(time = time, sam = sam) |> 
     copy() |> 
@@ -93,26 +92,6 @@ fit_normal_ <- function(time, sam, cut_year) {
 fit_normal <- memoise::memoise(fit_normal_)
 fit_segmented <- memoise::memoise(fit_segmented_)
 
-fir_normal_impl <- function(time, sam) {
-  data <- data.table(time = year(time), sam = sam)
-  mod <- lm(sam ~ time, data = data)
-  coef <- coef(mod)[-1]
-  
-  list(
-    estimate = coef,
-    se = summary(mod)$coefficients[2, 2],
-    df = mod$df.residual
-  )
-}
-
-fit_normal_ <- function(time, sam, cut_year) {
-  data <- data.table(time = time, sam = sam) |> 
-    copy() |> 
-    _[, let(period = ifelse(year(time) < cut_year, "first_period", "second_period"))] |>
-    na.omit() |> 
-    _[, fir_normal_impl(time, sam), by = period]
-  
-}
 
 fit_normal <- memoise::memoise(fit_normal_)
 
@@ -145,7 +124,6 @@ season <- function (x, lang = c("en", "es")) {
   return(factor(seasons[x], levels = c(djf, mam, jja, son)))
 }
 
-select_models_ <- function(data, common_models = TRUE) {
 select_models_ <- function(data, common_models = TRUE) {
   if (common_models) {
     models <- data |> 
@@ -204,7 +182,6 @@ plot_sam_ <- function(data,
                     second_period = paste0(cut_year + 1, "--2014"))
   
   boxplot <- model_mean |>
-  boxplot <- model_mean |>
     ggplot(aes(forcing, estimate * 10)) +
     geom_tile(
       data = mmm_trend, aes(
@@ -255,6 +232,7 @@ plot_sam_ <- function(data,
   mmm_mean <- rbind(obs[, .(time, sam, forcing = "ERA5")], mmm_mean)
   
   lineplot <- mmm_mean |> 
+    _[, sam := sam/sd(sam), by = .(forcing, season(time))] |> 
     ggplot(aes(year(time), sam, color = forcing)) +
     geom_line(alpha = 0.6) +
     trends + 

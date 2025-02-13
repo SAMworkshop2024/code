@@ -126,7 +126,8 @@ write_sam <- function(files_in, dir = "sam_indices/cmip6/elio_version") {
   sam <- sam |> 
     setnames("latitude", "lat", skip_absent = TRUE) |> 
     _[, .(psl = mean(psl)), by = .(time, lat)] |> 
-    _[, psl := (psl - mean(psl))/sd(psl), by = .(lat, month(time))] |> 
+    _[, psl := (psl - mean(psl[year(time) %between% c(1981, 2010)]))/sd(psl[year(time) %between% c(1981, 2010)]),
+         by = .(lat, month(time))] |> 
     _[order(lat)] |> 
     _[, .(psl = diff(psl)), by = .(time)] 
   
