@@ -3,6 +3,8 @@ library(ggplot2)
 library(data.table)
 
 
+computed_me <- fread("sam_indices/sam-cmip6.csv")
+
 # historical --------------------------------------------------------------
 
 files_historical <- list.files("sam_indices/cmip6", full.names = TRUE, pattern = "*.nc")
@@ -69,10 +71,10 @@ sam_damip <- ReadNetCDF(file_damip, vars = "sam") |>
   _[, time := lubridate::make_date(year, month)] |>
   _[year %between% c(1979, 2014)] |>
   _[season(time) %in% c("DJF", "JJA")] |>
+  _[, ensemble := interaction(institute, model, forcing, ensemble)] |>
+  _[, model := interaction(institute, model)] |> 
   _[, .(sam = mean(sam, na.rm = TRUE)),
-    by = .(institute, model, ensemble, forcing, time = seasonally(time))] |>
-  _[, ensemble := interaction(institute, model, forcing)] |>
-  _[, model := interaction(institute, model)]
+    by = .(institute, model, ensemble, forcing, time = seasonally(time))] 
 
 sam <- rbind(sam_damip, sam_historical)
 

@@ -5,7 +5,6 @@ library(data.table)
 
 # UI definition
 
-sam_data <- readRDS("sam-cmip6.Rds")
 
 source("plot_sam.R")
 
@@ -18,7 +17,7 @@ ui <- fluidPage(
       checkboxGroupInput("seasons",
                          "Select Seasons:",
                          choices = c("DJF", "MAM", "JJA", "SON"),
-                         selected = c("DJF", "MAM", "JJA", "SON")),
+                         selected = c("DJF", "JJA")),
       
       # Slider for cut year
       sliderInput("cut_year",
@@ -30,41 +29,56 @@ ui <- fluidPage(
       
       # Checkbox for common models
       checkboxInput("common_models",
-                    "Only models with all forcings?",
+                    "Only models with all forcings",
                     value = TRUE),
       
-      # Add a plot button to prevent excessive recomputation
-      actionButton("update_plot", "Update Plot")
+      checkboxInput("continuous",
+                    "Continuos regression",
+                    value = TRUE)
     ),
     
     mainPanel(
       # Plot output
-      plotOutput("trendPlot")
+      plotOutput("trendPlot"),
+      plotOutput("linePlot")
     )
   )
 )
 
 # Server logic
 server <- function(input, output) {
+  sam_data <- readRDS("sam-cmip6.Rds")[year(time) %between% c(1979, 2014)] |> 
+    _[, .(sam = mean(sam)), by = .(time = seasonally(time),
+                                   institute, model, member, forcing)]
+  sam_data[, season := season(time)]
+  
+  era5 <- sam_data[model == "ERA5"]
+  sam_data <- sam_data[model != "ERA5"]
+  
+  sam_data[, forcing := factor(forcing, 
+                               levels = c("historical", "hist-GHG", "hist-stratO3", "hist-totalO3"))]
+  
+  data_models <- reactive(select_models(sam_data, input$common_models))
+  data_season <- reactive(select_season(data_models(), input$seasons))
+  era5_season <- reactive(select_season(era5, input$seasons))
   
   # Reactive expression for the plot
-  plot_data <- eventReactive(input$update_plot, {
-    # Validate that at least one season is selected
-    validate(
-      need(length(input$seasons) > 0, "Please select at least one season")
-    )
-    
-    # Call your plotting function with the user inputs
-    plot_sam(data = sam_data,  # You'll need to load your data
-             seasons = input$seasons,
+  plot_data <- reactive({
+    plot_sam(data = data_season(),  # You'll need to load your data
+             obs = era5_season(),
              cut_year = input$cut_year,
-             common_models = input$common_models)
+             continuous = input$continuous)
   })
   
   # Render the plot
   output$trendPlot <- renderPlot({
-    plot_data()
+    plot_data()[[1]]
   })
+  
+  output$linePlot <- renderPlot({
+    plot_data()[[2]]
+  })
+  
 }
 
 # Run the app
