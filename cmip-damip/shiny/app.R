@@ -18,6 +18,7 @@ ui <- fluidPage(
                          "Select Seasons:",
                          choices = c("DJF", "MAM", "JJA", "SON"),
                          selected = c("DJF", "JJA")),
+                         selected = c("DJF", "JJA")),
       
       # Slider for cut year
       sliderInput("cut_year",
@@ -30,8 +31,12 @@ ui <- fluidPage(
       # Checkbox for common models
       checkboxInput("common_models",
                     "Only models with all forcings",
+                    "Only models with all forcings",
                     value = TRUE),
       
+      checkboxInput("continuous",
+                    "Continuos regression",
+                    value = TRUE)
       checkboxInput("continuous",
                     "Continuos regression",
                     value = TRUE)
@@ -39,6 +44,8 @@ ui <- fluidPage(
     
     mainPanel(
       # Plot output
+      plotOutput("trendPlot"),
+      plotOutput("linePlot")
       plotOutput("trendPlot"),
       plotOutput("linePlot")
     )
@@ -68,8 +75,9 @@ server <- function(input, output) {
              obs = era5_season(),
              cut_year = input$cut_year,
              continuous = input$continuous)
+             continuous = input$continuous)
   })
-  
+
   # Render the plot
   output$trendPlot <- renderPlot({
     plot_data()[[1]]
@@ -77,9 +85,16 @@ server <- function(input, output) {
   
   output$linePlot <- renderPlot({
     plot_data()[[2]]
+    plot_data()[[1]]
   })
+  
+  output$linePlot <- renderPlot({
+    plot_data()[[2]]
+  })
+  
   
 }
 
 # Run the app
 shinyApp(ui = ui, server = server)
+
