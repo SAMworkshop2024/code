@@ -19,6 +19,11 @@ ui <- fluidPage(
                          choices = c("DJF", "MAM", "JJA", "SON"),
                          selected = c("DJF", "JJA")),
       
+      checkboxGroupInput("forcing",
+                         "Select forcings:",
+                         choices = c("historical", "hist-GHG", "hist-stratO3", "hist-totalO3"),
+                         selected = c("historical", "hist-GHG", "hist-stratO3")),
+      
       # Slider for cut year
       sliderInput("cut_year",
                   "Select Cut Year:",
@@ -57,7 +62,9 @@ server <- function(input, output) {
   sam_data[, forcing := factor(forcing, 
                                levels = c("historical", "hist-GHG", "hist-stratO3", "hist-totalO3"))]
   
-  data_models <- reactive(select_models(sam_data, input$common_models))
+  data_experiments <- reactive(sam_data[forcing %in% input$forcing])
+  
+  data_models <- reactive(select_models(data_experiments(), input$common_models))
   data_season <- reactive(select_season(data_models(), input$seasons))
   era5_season <- reactive(select_season(era5, input$seasons))
   
