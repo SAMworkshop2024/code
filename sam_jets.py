@@ -37,8 +37,9 @@ def detrend_x(x):
 overlap = True
 
 era_base = '/g/data/rt52/era5/'
+data_base= '/g/data/v45/SAMworkshop2024/data/'
 
-sam = xr.open_dataarray('/scratch/v45/SAMworkshop2024/data/SAM_GW_1m_1979-2023.nc')
+sam = xr.open_dataarray(data_base+'SAM_GW_1m_1979-2023.nc')
 if detrend:
     sam = sam.groupby('time.season').map(detrend_x)
 
@@ -46,7 +47,7 @@ def ReadERA(ds):
     ds = ac.StandardGrid(ds,rename=True)
     return ds.sel(pres=level).sel(latslice)
 
-ufile = 'u_monthly.nc'
+ufile = data_base+'u_monthly.nc'
 if os.path.isfile(ufile):
     print('reading',ufile)
     u = xr.open_dataarray(ufile)
@@ -55,7 +56,7 @@ else:
     u = u.sel(time=slice(sam.time[0],sam.time[-1])).u.load()
     if detrend:
         u = u.groupby('time.season').map(detrend_x)
-    u.to_netcdf('u_monthly.nc')
+    u.to_netcdf(ufile)
     print(ufile)
     
 MAMJJA = (sam['time.month']>=3)*(sam['time.month']<=8)
