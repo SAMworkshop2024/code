@@ -87,7 +87,8 @@ filtr2 = {'DJF, SAM < {0}'.format(-threshold) : DJF*SAMneg,
           'SON, SAM > {0}'.format(threshold) : SON*SAMpos
           }
 #nrows = len(plot_seasons)
-ncols = len(plot_seasons)+1
+#ncols = len(plot_seasons)+1
+ncols = len(plot_seasons)
 
 #if nrows == 4:
 fltr = filtr2
@@ -98,13 +99,15 @@ fltr = filtr2
 #    nrows = nrows//2
     
 #ncols = 3
-nrows = 2
+#nrows = 2
+nrows = 3
 fig,axs,transf = ac.Projection(proj,ncols=ncols,nrows=nrows,kw_args={'central_longitude':155})
-fig.set_figheight(nrows*1.1)
-fig.set_figwidth(ncols*4*1.2)
+fig.set_figheight(nrows*2.0)
+fig.set_figwidth(ncols*4)
 
 keys = sorted(list(fltr.keys()))
-ttlesize = 'small'
+ttlesize = 'medium'
+ttleloc = 'left'
 if overlap:
     seasons = np.unique([k.split(',')[0] for k in keys])
     sams = np.unique([s.split(', ')[-1] for s in keys])
@@ -112,31 +115,37 @@ if overlap:
         season = seasons[a]
         polarity = 'SAM > {0}'.format(threshold)
         key = '{0}, {1}'.format(season,polarity)
-        ax = axs[a][0]
-        #ax = axs[0][a]
+        #ax = axs[a][0]
+        ax = axs[0][a]
         upos = u.isel(time=fltr[key]).mean('time')
         cl = upos.plot.contourf(levels=nlevs['full'],ax=ax,vmin=10,vmax=40,cmap='Reds',add_colorbar=False,**transf) 
         #ax.set_title(key)
-        ax.set_title(key.replace(polarity,'positive SAM'),fontsize=ttlesize)
+        if ttleloc == 'left':
+            ax.set_title('',loc='center')
+        ax.set_title('   '+key.replace(polarity,'positive SAM'),fontsize=ttlesize,loc=ttleloc)
         ax.coastlines()
         polarity = polarity.replace('>','<').replace('{0}'.format(threshold),'{0}'.format(-threshold))
         key = '{0}, {1}'.format(season,polarity)
-        ax = axs[a][1]
-        #ax = axs[1][a]
+        #ax = axs[a][1]
+        ax = axs[1][a]
         uneg = u.isel(time=fltr[key]).mean('time')
         cl = uneg.plot.contourf(levels=nlevs['full'],ax=ax,vmin=10,vmax=40,cmap='Reds',add_colorbar=False,**transf)
         #ax.set_title(key)
-        ax.set_title(key.replace(polarity,'negative SAM'),fontsize=ttlesize)
+        if ttleloc == 'left':
+            ax.set_title('',loc='center')
+        ax.set_title('   '+key.replace(polarity,'negative SAM'),fontsize=ttlesize,loc=ttleloc)
         ax.coastlines()  
-        ax = axs[a][2] 
-        #ax = axs[2][a]
+        #ax = axs[a][2] 
+        ax = axs[2][a]
         cd = (upos-uneg).plot.contourf(levels=nlevs['anom'],ax=ax,vmin=vmins['{0:3.1f}'.format(threshold)],cmap='RdBu_r',extend='both',add_colorbar=False,**transf) 
         #ax.set_title('{0}, difference'.format(season))
-        ax.set_title('difference',fontsize=ttlesize)
+        if ttleloc == 'left':
+            ax.set_title('',loc='center')
+        ax.set_title(f'   {season}, difference',fontsize=ttlesize,loc=ttleloc)
         ax.coastlines()
         # there's a bug where the last axes show the whole globe
-        axs[a][2].set_ylim(axs[0][0].get_ylim())
-        #axs[2][a].set_ylim(axs[0][0].get_ylim())
+        #axs[a][2].set_ylim(axs[0][0].get_ylim())
+        axs[2][a].set_ylim(axs[0][0].get_ylim())
 else:
     for a,ax in enumerate(axs.flat):
         key = keys[a]
@@ -146,15 +155,23 @@ else:
         cl = u.isel(time=fltr[key]).mean('time').plot.contourf(levels=11,ax=ax,vmin=10,vmax=50,cmap='Reds',add_colorbar=False,**transf)
         ax.set_title(key)
         ax.coastlines()
+#colbarargs = {'format':'%g','orientation':'horizontal'}
 if overlap:
-    cb = ac.AddColorbar(fig,axs,cd,shrink=0.8,cbar_args={'ticks':vticks['{0:3.1f}'.format(threshold)],'format':'%g'})
-    cb.set_label('zonal wind difference [ms-1]',size='x-small')
+    #cbax = fig.add_subplot(nrows+1,ncols,nrows*ncols+1)
+    #cb = fig.colorbar(cd,ax=cbax,ticks=vticks['{0:3.1f}'.format(threshold)],**colbarargs)
+    cb = ac.AddColorbar(fig,axs,cd,shrink=0.5,cbar_args={'ticks':vticks['{0:3.1f}'.format(threshold)],'format':'%g','orientation':'horizontal','pad':0.01})
+    cb.set_label(r'Zonal wind difference (ms$^{-1}$)',size='small')
     cb.ax.tick_params(labelsize='small')
-cb = ac.AddColorbar(fig,axs,cl,shrink=0.8,cbar_args={'location':'left','ticks':[10,20,30,40],'format':'%g'})
-cb.set_label(label='zonal wind [ms-1]',size='x-small')
+    #cbax.axis('off')
+#cbax = fig.add_subplot(nrows+1,ncols,nrows*ncols+2)
+#cb = fig.colorbar(cl,ax=cbax,ticks=[10,20,30,40],**colbarargs)
+cb = ac.AddColorbar(fig,axs,cl,shrink=0.5,cbar_args={'ticks':[10,20,30,40],'format':'%g','orientation':'horizontal','pad':0.05})
+cb.set_label(label=r'Zonal wind (ms$^{-1}$)',size='small')
 cb.ax.tick_params(labelsize='small' )
-ac.AddPanelLabels(axs,'upper left',ypos=1.4,size='large',style='',weight='bold')
-fig.suptitle('Seasonal {0}hPa zonal wind by SAM phase'.format(level))
+#cbax.axis('off')
+#ac.AddPanelLabels(axs,'upper left',ypos=1.4,size='large',style='',weight='bold')
+ac.AddPanelLabels(axs,'upper left',ypos=1.27,xpos=0,style='',weight='bold',size=ttlesize)
+#fig.suptitle('Seasonal {0}hPa zonal wind by SAM phase'.format(level))
 outFile = 'SAM_u{1}_SAM{0}.pdf'.format(threshold,level)
 if detrend:
     outFile = outFile.replace('.pdf','_detrend.pdf')
