@@ -124,6 +124,11 @@ if overlap:
             ax.set_title('',loc='center')
         ax.set_title('   '+key.replace(polarity,'positive SAM'),fontsize=ttlesize,loc=ttleloc)
         ax.coastlines()
+        if a%2 == 0:
+            lbls = False
+        else:
+            lbls = ['left']
+        ax.gridlines(draw_labels=lbls)
         polarity = polarity.replace('>','<').replace('{0}'.format(threshold),'{0}'.format(-threshold))
         key = '{0}, {1}'.format(season,polarity)
         #ax = axs[a][1]
@@ -134,7 +139,12 @@ if overlap:
         if ttleloc == 'left':
             ax.set_title('',loc='center')
         ax.set_title('   '+key.replace(polarity,'negative SAM'),fontsize=ttlesize,loc=ttleloc)
-        ax.coastlines()  
+        ax.coastlines() 
+        if a%2 == 0:
+            lbls = False
+        else:
+            lbls = ['left']
+        ax.gridlines(draw_labels=lbls)
         #ax = axs[a][2] 
         ax = axs[2][a]
         cd = (upos-uneg).plot.contourf(levels=nlevs['anom'],ax=ax,vmin=vmins['{0:3.1f}'.format(threshold)],cmap='RdBu_r',extend='both',add_colorbar=False,**transf) 
@@ -142,10 +152,15 @@ if overlap:
         if ttleloc == 'left':
             ax.set_title('',loc='center')
         ax.set_title(f'   {season}, difference',fontsize=ttlesize,loc=ttleloc)
-        ax.coastlines()
+        ax.coastlines() 
         # there's a bug where the last axes show the whole globe
         #axs[a][2].set_ylim(axs[0][0].get_ylim())
         axs[2][a].set_ylim(axs[0][0].get_ylim())
+        if a%2 == 0:
+            lbls = False
+        else:
+            lbls = ['left']
+        ax.gridlines(draw_labels=lbls)
 else:
     for a,ax in enumerate(axs.flat):
         key = keys[a]
