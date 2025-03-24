@@ -108,6 +108,7 @@ fig.set_figwidth(ncols*4)
 keys = sorted(list(fltr.keys()))
 ttlesize = 'medium'
 ttleloc = 'left'
+labeldict = {'ylocs':[-60,-30],'ylabel_style':{'fontsize':'small'}}
 if overlap:
     seasons = np.unique([k.split(',')[0] for k in keys])
     sams = np.unique([s.split(', ')[-1] for s in keys])
@@ -124,11 +125,11 @@ if overlap:
             ax.set_title('',loc='center')
         ax.set_title('   '+key.replace(polarity,'positive SAM'),fontsize=ttlesize,loc=ttleloc)
         ax.coastlines()
-        if a%2 == 0:
-            lbls = False
-        else:
-            lbls = ['left']
-        ax.gridlines(draw_labels=lbls)
+        #if a%2 == 0:
+        #    lbls = ['right']
+        #else:
+        lbls = ['left']
+        ax.gridlines(draw_labels=lbls,**labeldict)
         polarity = polarity.replace('>','<').replace('{0}'.format(threshold),'{0}'.format(-threshold))
         key = '{0}, {1}'.format(season,polarity)
         #ax = axs[a][1]
@@ -140,11 +141,13 @@ if overlap:
             ax.set_title('',loc='center')
         ax.set_title('   '+key.replace(polarity,'negative SAM'),fontsize=ttlesize,loc=ttleloc)
         ax.coastlines() 
-        if a%2 == 0:
-            lbls = False
-        else:
-            lbls = ['left']
-        ax.gridlines(draw_labels=lbls)
+        #if a%2 == 0:
+        #    lbls = False
+        #else:
+        lbls = ['left']
+        #if a%2 != 0:
+        #    ax.set_yticks([-60,-30],crs=transf['transform'])
+        ax.gridlines(draw_labels=lbls,**labeldict)
         #ax = axs[a][2] 
         ax = axs[2][a]
         cd = (upos-uneg).plot.contourf(levels=nlevs['anom'],ax=ax,vmin=vmins['{0:3.1f}'.format(threshold)],cmap='RdBu_r',extend='both',add_colorbar=False,**transf) 
@@ -156,11 +159,11 @@ if overlap:
         # there's a bug where the last axes show the whole globe
         #axs[a][2].set_ylim(axs[0][0].get_ylim())
         axs[2][a].set_ylim(axs[0][0].get_ylim())
-        if a%2 == 0:
-            lbls = False
-        else:
-            lbls = ['left']
-        ax.gridlines(draw_labels=lbls)
+        #if a%2 == 0:
+        #    lbls = False
+        #else:
+        lbls = ['left']
+        ax.gridlines(draw_labels=lbls,**labeldict)
 else:
     for a,ax in enumerate(axs.flat):
         key = keys[a]
