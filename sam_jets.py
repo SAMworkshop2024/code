@@ -97,6 +97,10 @@ fltr = filtr2
 
 #if overlap:
 #    nrows = nrows//2
+uclim = u.groupby('time.season').mean()
+def PlotClim(season,ax,transf):
+    uclim.sel(season=season).plot.contour(levels=[10,20,30,40],colors='k',ax=ax,linewidths=0.5,linestyles='-',add_colorbar=False,**transf)
+    
     
 #ncols = 3
 #nrows = 2
@@ -119,7 +123,8 @@ if overlap:
         #ax = axs[a][0]
         ax = axs[0][a]
         upos = u.isel(time=fltr[key]).mean('time')
-        cl = upos.plot.contourf(levels=nlevs['full'],ax=ax,vmin=10,vmax=40,cmap='Reds',add_colorbar=False,**transf) 
+        cl = upos.plot.contourf(levels=nlevs['full'],ax=ax,vmin=10,vmax=40,cmap='Reds',add_colorbar=False,**transf)
+        PlotClim(season,ax,transf)
         #ax.set_title(key)
         if ttleloc == 'left':
             ax.set_title('',loc='center')
@@ -136,6 +141,7 @@ if overlap:
         ax = axs[1][a]
         uneg = u.isel(time=fltr[key]).mean('time')
         cl = uneg.plot.contourf(levels=nlevs['full'],ax=ax,vmin=10,vmax=40,cmap='Reds',add_colorbar=False,**transf)
+        PlotClim(season,ax,transf)
         #ax.set_title(key)
         if ttleloc == 'left':
             ax.set_title('',loc='center')
@@ -150,7 +156,8 @@ if overlap:
         ax.gridlines(draw_labels=lbls,**labeldict)
         #ax = axs[a][2] 
         ax = axs[2][a]
-        cd = (upos-uneg).plot.contourf(levels=nlevs['anom'],ax=ax,vmin=vmins['{0:3.1f}'.format(threshold)],cmap='RdBu_r',extend='both',add_colorbar=False,**transf) 
+        cd = (upos-uneg).plot.contourf(levels=nlevs['anom'],ax=ax,vmin=vmins['{0:3.1f}'.format(threshold)],cmap='RdBu_r',extend='both',add_colorbar=False,**transf)
+        #PlotClim(season,ax,transf)
         #ax.set_title('{0}, difference'.format(season))
         if ttleloc == 'left':
             ax.set_title('',loc='center')
