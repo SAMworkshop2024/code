@@ -9,15 +9,15 @@ begin
   clst = 1981     ;climatology start date
   clen   = 2010   ;climatiology end date
 
-  diri = "~/data/NSIDC/"
+  diri = "../data/"
   fili = "NSIDC_SH_totalSIA_monthly_v04r00.nc"
   iNam = "SIE_cdr"
 
-  dira = "~/data/indices/"
+  dira = "../data/"
   fila = "SAM_GW_1m_1979-2023.nc"
   aNam = "SAM"
 
-  diro = "~/plots/ANTARCTIC/NSIDC/"
+  diro = "./"
   filo = "NSIDC_"+iNam+"_SAM_cor_clim"
   oType = "png"
 
