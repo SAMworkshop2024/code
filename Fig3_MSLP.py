@@ -10,16 +10,11 @@ def ReadSH(ds):
     return ds.sel(lat=slice(-90,-20))
 
 # Workshop data dir
-data_dir ='/scratch/v45/SAMworkshop2024/data'
-# ERA5 data dir
+data_dir ='../data'
+# ERA5 data dir - default set for NCI
 era_base = '/g/data/rt52/era5/'
 
 # read sam index netcdf file
-
-# mj standardization
-#sam = xr.open_dataset(f'{data_dir}/sam_indices_mxj.nc', engine='netcdf4')
-
-# the other one
 sam = xr.open_dataset(f'{data_dir}/SAM_GW_1m_1979-2023.nc', engine='netcdf4')
 
 # get MSLP from ERA5 montlhy
@@ -98,9 +93,8 @@ cb1.ax.locator_params(nbins=8)
 cb3 = fig.colorbar(cf3, ax=axs[2], **cbarArgs)
 cb3.ax.locator_params(nbins=8)
 
-plt.show()
 
-
-# # change here path/name
-# figFile = 'Fig3.png'
-# fig.savefig(figFile, bbox_inches='tight', facecolor='white', transparent=False)
+# change here path/name
+figFile = 'Fig3a.pdf'
+fig.savefig(figFile, bbox_inches='tight', facecolor='white', transparent=False)
+print(figFile)
