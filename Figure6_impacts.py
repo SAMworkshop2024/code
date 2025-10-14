@@ -1,6 +1,8 @@
 import xarray as xr
 
-dset=xr.open_dataset('/scratch/v45/SAMworkshop2024/data/SAT_anomaly.nc')
+datadir = '../data/'
+
+dset=xr.open_dataset(datadir+'SAT_anomaly.nc')
 temp=dset.__xarray_dataarray_variable__
 
 years=xr.cftime_range(start='1979-01-01', end='2023-12-31', freq='Y')
@@ -27,7 +29,7 @@ for i in range(len(years.year)):
 
 temp_mjjaso=temp_mjjaso[1:].assign_coords(years=years)
 
-dset=xr.open_dataset('/scratch/v45/SAMworkshop2024/data/precip_anomaly.nc')
+dset=xr.open_dataset(datadir+'precip_anomaly.nc')
 precip=dset.__xarray_dataarray_variable__
 
 years=xr.cftime_range(start='1979-01-01', end='2023-12-31', freq='Y')
@@ -83,7 +85,7 @@ for i in range(len(years.year)):
 
 sic_mjjaso=sic_mjjaso[1:].assign_coords(years=years)
 
-dset=xr.open_dataset('/scratch/v45/SAMworkshop2024/data/u850_anomaly.nc')
+dset=xr.open_dataset(datadir+'u850_anomaly.nc')
 wind=dset.__xarray_dataarray_variable__
 months_of_interest = [11,12,1,2,3,4] 
 wind_ndfma = wind.sel(time=wind['time.month'].isin(months_of_interest))
@@ -108,7 +110,7 @@ for i in range(len(years.year)):
 
 wind_mjjaso=wind_mjjaso[1:].assign_coords(years=years)
 
-dset=xr.open_dataset('/scratch/v45/SAMworkshop2024/data/v850_anomaly.nc')
+dset=xr.open_dataset(datadir+'v850_anomaly.nc')
 vwind=dset.__xarray_dataarray_variable__
 months_of_interest = [11,12,1,2,3,4] 
 vwind_ndfma = vwind.sel(time=vwind['time.month'].isin(months_of_interest))
@@ -133,7 +135,7 @@ for i in range(len(years.year)):
 
 vwind_mjjaso=vwind_mjjaso[1:].assign_coords(years=years)
 
-dset=xr.open_dataset('/scratch/dx2/rr8442/SAM_GW_1m_1979-2023.nc')
+dset=xr.open_dataset(datadir+'SAM_GW_1m_1979-2023.nc')
 sam=dset.SAM
 
 months_of_interest = [11,12,1,2,3,4] 
@@ -201,7 +203,7 @@ plt.rc('font', weight='bold',size=15)
 rc('font',**{'family':'serif','serif':['Times']})
 
 
-dset=xr.open_dataset('/scratch/v45/SAMworkshop2024/data/SAT_anomaly.nc')
+dset=xr.open_dataset(datadir+'SAT_anomaly.nc')
 temp=dset.__xarray_dataarray_variable__
 
 lon ,lat = temp.longitude , temp.latitude

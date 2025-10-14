@@ -17,6 +17,8 @@ Set `data_base` to the path where data files are stored relative to the script l
 
 run ``ptyhon Fig2_SAM_Jets.py`` and resulting figure will be `SAM_u300_SAM2.pdf`.
 
+Requires `aostools` available [in this directory](https://github.com/SAMworkshop2024/aostools) or [this repository](https://github.com/mjucker/aostools).
+
 ## Figure 3
 
 
