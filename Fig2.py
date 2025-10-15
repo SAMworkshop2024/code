@@ -43,6 +43,7 @@ def detrend_x(x):
 
 overlap = True
 
+# raw ERA5 data only needed if u_monthly.nc not available
 era_base = '/g/data/rt52/era5/'
 
 sam = xr.open_dataarray(data_path+'SAM_GW_1m_1979-2023.nc')
