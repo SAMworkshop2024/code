@@ -4,21 +4,21 @@ from aostools import climate as ac
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 
+data_dir ='../data_minimal/'
+
+
 # read SH data only
 def ReadSH(ds):
     ds = ac.StandardGrid(ds,rename=True)
     return ds.sel(lat=slice(-90,-20))
 
-# Workshop data dir
-data_dir ='../data'
-# ERA5 data dir - default set for NCI
-era_base = '/g/data/rt52/era5/'
-
 # read sam index netcdf file
-sam = xr.open_dataset(f'{data_dir}/SAM_GW_1m_1979-2023.nc', engine='netcdf4')
+sam = xr.open_dataset(f'{data_dir}SAM_GW_1m_1979-2023.nc', engine='netcdf4')
 
 # get MSLP from ERA5 montlhy
-msl = xr.open_mfdataset(era_base+'single-levels/monthly-averaged/msl/*/*.nc', preprocess=ReadSH)
+#msl = xr.open_mfdataset(era_base+'single-levels/monthly-averaged/msl/*/*.nc', preprocess=ReadSH)
+msl = ReadSH(xr.open_dataset(data_dir+'msl_anomaly.nc'))
+
 
 # time period to use
 period = slice('1979', '2023')
