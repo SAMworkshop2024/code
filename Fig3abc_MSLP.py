@@ -4,7 +4,7 @@ from aostools import climate as ac
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 
-data_dir ='../data_minimal/'
+data_dir ='../data/'
 
 
 # read SH data only
