@@ -4,6 +4,13 @@ import numpy as np
 import scipy.signal as sg
 import os
 
+
+data_path = '../data/'
+
+
+
+
+
 level = 300
 proj = 'Robinson'
 latslice = {'lat':slice(-90,0)}
@@ -37,9 +44,8 @@ def detrend_x(x):
 overlap = True
 
 era_base = '/g/data/rt52/era5/'
-data_base= '/g/data/v45/SAMworkshop2024/data/'
 
-sam = xr.open_dataarray(data_base+'SAM_GW_1m_1979-2023.nc')
+sam = xr.open_dataarray(data_path+'SAM_GW_1m_1979-2023.nc')
 if detrend:
     sam = sam.groupby('time.season').map(detrend_x)
 
@@ -47,7 +53,7 @@ def ReadERA(ds):
     ds = ac.StandardGrid(ds,rename=True)
     return ds.sel(pres=level).sel(latslice)
 
-ufile = data_base+'u_monthly.nc'
+ufile = data_path+'u_monthly.nc'
 if os.path.isfile(ufile):
     print('reading',ufile)
     u = xr.open_dataarray(ufile)
@@ -197,8 +203,8 @@ cb.ax.tick_params(labelsize='small' )
 #ac.AddPanelLabels(axs,'upper left',ypos=1.4,size='large',style='',weight='bold')
 ac.AddPanelLabels(axs,'upper left',ypos=1.27,xpos=0,style='',weight='bold',size=ttlesize)
 #fig.suptitle('Seasonal {0}hPa zonal wind by SAM phase'.format(level))
-outFile = 'SAM_u{1}_SAM{0}.pdf'.format(threshold,level)
-if detrend:
-    outFile = outFile.replace('.pdf','_detrend.pdf')
+#outFile = 'SAM_u{1}_SAM{0}.pdf'.format(threshold,level)
+#if detrend:
+#    outFile = outFile.replace('.pdf','_detrend.pdf')
+outFile = 'Fig2.pdf'
 fig.savefig(outFile,bbox_inches='tight')
-print(outFile)
