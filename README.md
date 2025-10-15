@@ -4,6 +4,8 @@ This code repository allows for re-creation of figures from Purich et al., "Sout
 
 Most script require data files stored separately at ...
 
+In general, required python packages are `xarray`, `pandas`, `matplotlib`, `numpy`, `cartopy`, `scipy`.
+
 To reproduce the figures, follow below steps.
 
 ## Figure 1
@@ -11,11 +13,11 @@ To reproduce the figures, follow below steps.
 
 ## Figure 2
 
-The main script for this figure is `Fig2_SAM_Jets.py`. 
+The main script for this figure is `Fig2.py`. 
 
 Set `data_base` to the path where data files are stored relative to the script location.
 
-run ``ptyhon Fig2_SAM_Jets.py`` and resulting figure will be `SAM_u300_SAM2.pdf`.
+run ``python Fig2.py`` and resulting figure will be `Fig2.pdf`.
 
 Requires `aostools` available [in this directory](https://github.com/SAMworkshop2024/aostools) or [this repository](https://github.com/mjucker/aostools).
 
