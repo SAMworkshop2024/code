@@ -298,7 +298,7 @@ ax.set_extent([-180, 180, -90, -30], crs=ccrs.PlateCarree())
 ax.set_boundary(circle, transform=ax.transAxes)  # Apply circular boundary to plot area
 ax.coastlines()
 title_australia_ndjfma = 'a  NDJFMA, surface air temperature'  
-ax.set_title(title_australia_ndjfma, fontsize=12)
+ax.set_title(title_australia_ndjfma, fontsize=10, fontweight='bold')
 
 # Second subplot: MJJASO surface air temperature trend
 ax1 = fig.add_subplot(322, projection=ccrs.SouthPolarStereo(central_longitude=0))
@@ -309,7 +309,7 @@ ax1.set_extent([-180, 180, -90, -30], crs=ccrs.PlateCarree())
 ax1.set_boundary(circle, transform=ax1.transAxes)
 ax1.coastlines()
 title_australia_ndjfma = 'b  MJJASO, surface air temperature'
-ax1.set_title(title_australia_ndjfma, fontsize=12)
+ax1.set_title(title_australia_ndjfma, fontsize=10, fontweight='bold')
 
 # Add colorbar for surface air temperature plots
 cb_ax = fig.add_axes([0.93, 0.70, 0.009, 0.15])
@@ -349,7 +349,7 @@ ax2.quiverkey(q, X=0.93, Y=0.89, U=2,
 ax2.set_boundary(circle, transform=ax2.transAxes)
 ax2.coastlines()
 title_australia_ndjfma = r'c  NDJFMA, precipitation'
-ax2.set_title(title_australia_ndjfma, fontsize=12)
+ax2.set_title(title_australia_ndjfma, fontsize=10, fontweight='bold')
 
 
 # Fourth subplot: MJJASO precipitation with wind vectors
@@ -372,7 +372,7 @@ ax3.quiverkey(q, X=.93, Y=0.89, U=2,
 ax3.set_boundary(circle, transform=ax3.transAxes)
 ax3.coastlines()
 title_australia_ndjfma = r'd  MJJASO, precipitation'
-ax3.set_title(title_australia_ndjfma, fontsize=12)
+ax3.set_title(title_australia_ndjfma, fontsize=10, fontweight='bold')
 
 # Add colorbar for precipitation plots
 cc_ax = fig.add_axes([.93, 0.43, 0.009, 0.15])
@@ -403,7 +403,7 @@ ax4.coastlines()
 ax4.set_boundary(circle, transform=ax4.transAxes)
 ax4.coastlines()
 title_australia_ndjfma = r'e NDJFMA, sea ice concentration'
-ax4.set_title(title_australia_ndjfma, fontsize=12)
+ax4.set_title(title_australia_ndjfma, fontsize=10, fontweight='bold')
 
 # Sixth subplot: MJJASO sea ice concentration
 ax5 = fig.add_subplot(326, projection=ccrs.SouthPolarStereo(central_longitude=0))
@@ -414,7 +414,7 @@ ax5.coastlines()
 ax5.set_boundary(circle, transform=ax5.transAxes)
 ax5.coastlines()
 title_australia_ndjfma = r'f  MJJASO, sea ice concentration'
-ax5.set_title(title_australia_ndjfma, fontsize=12)
+ax5.set_title(title_australia_ndjfma, fontsize=10, fontweight='bold')
 
 # Add colorbar for sea ice concentration
 cc_ax = fig.add_axes([.93, 0.16, 0.009, 0.15])
