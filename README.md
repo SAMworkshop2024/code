@@ -2,7 +2,7 @@
 
 This code repository allows for re-creation of figures from Purich et al., "Southern Annular Mode dynamics, projections and impacts in a changing climate".
 
-Most script require data files stored separately at ... Download all data in that directory.
+Most script require data files stored separately [on Zenodo.org](https://doi.org/10.5281/zenodo.17364274). Download all data from that repository and store it inside one dedicated folder.
 
 In general, required python packages are `xarray`, `pandas`, `matplotlib`, `numpy`, `cartopy`, `scipy`.
 
@@ -10,7 +10,7 @@ To reproduce the figures, follow below steps:
 
 ## All figures
 
-Set variable `data_path` in each script to the path of the data files downloaded above.
+Set variable `data_path` in each script to the path of the data files downloaded [from Zenodo.org](https://doi.org/10.5281/zenodo.17364274). In all our scripts, `data_path` defaults to `../data/`. So one idea would be to store all data from Zenodo in a folder called "data" under the same folder as you store this code repository (that is, not inside this code folder).
 
 ## Figure 1
 
