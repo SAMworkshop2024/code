@@ -3,6 +3,108 @@ import xarray as xr
 data_path = '../data/'
 
 
+#--------------------------------------------
+# this function was downloaded from
+#  https://docs.dkrz.de/doc/visualization/sw/python/source_code/python-matplotlib-read-and-use-ncl-colormaps.html
+# Function get_NCL_colormap
+# Get the NCL colormap from the original URL.
+#--------------------------------------------
+def get_NCL_colormap(cmap_name, extend='None'):
+    '''Read an NCL RGB colormap file and convert it to a Matplotlib colormap
+    object.
+
+    Parameter:
+        cmap_name     NCL RGB colormap name, e.g. 'ncl_default'
+        extend        use NCL behavior of color handling for the colorbar 'under'
+                      and 'over' colors. 'None' or 'ncl', default 'None'
+
+    Description:
+        Read the NCL colormap and convert it to a Matplotlib Colormap object.
+        It checks if the colormap file is already available or use the
+        appropriate URL.
+
+        If NCL is installed the colormap will be searched in its colormaps
+        folder $NCARG_ROOT/lib/ncarg/colormaps.
+
+        Returns a Matplotlib Colormap object.
+    '''
+    from matplotlib.colors import ListedColormap
+    import requests
+    import errno
+    import os,re
+
+    #-- NCL colormaps URL
+    NCARG_URL = 'https://www.ncl.ucar.edu/Document/Graphics/ColorTables/Files/'
+
+    #-- read the NCL colormap RGB file
+    colormap_file = cmap_name+'.rgb'
+    cfile = os.path.split(colormap_file)[1]
+
+    if os.path.isfile(colormap_file) == False:
+        #-- if NCL is already installed
+        if 'NCARG_ROOT' in os.environ:
+            cpath = os.environ['NCARG_ROOT']+'/lib/ncarg/colormaps/'
+            if os.path.isfile(cpath + cfile):
+                colormap_file = cpath + cfile
+                with open(colormap_file) as f:
+                    lines = [re.sub('\s+',' ',l)  for l in f.read().splitlines() if not (l.startswith('#') or l.startswith('n'))]
+        #-- use URL to read colormap
+        elif not 'NCARG_ROOT' in os.environ:
+            url_file = NCARG_URL+'/'+cmap_name+'.rgb'
+            res = requests.head(url_file)
+            if not res.status_code == 200:
+                print(f'{cmap_name} does not exist!')
+                raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), cmap_name)
+            content = requests.get(url_file, stream=True).content
+            lines = [re.sub('\s+',' ',l)  for l in content.decode('UTF-8').splitlines() if not (l.startswith('#') or l.startswith('n'))]
+        else:
+            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), colormap_file)
+    #-- use local colormap file
+    else:
+        with open(colormap_file) as f:
+            lines = [re.sub('\s+',' ',l)  for l in f.read().splitlines() if not (l.startswith('#') or l.startswith('n'))]
+
+    #-- skip all possible header lines
+    tmp  = [l.split('#', 1)[0] for l in lines]
+
+    tmp = [re.sub(r'\s+',' ', s) for s in tmp]
+    tmp = [ x for x in tmp if ';' not in x ]
+    tmp = [ x for x in tmp if x != '']
+
+    #-- get the RGB values
+    i = 0
+    for l in tmp:
+        new_array = np.array(l.split()).astype(float)
+        if i == 0:
+            color_list = new_array
+        else:
+            color_list = np.vstack((color_list, new_array))
+        i += 1
+
+    #-- make sure that the RGB values are within range 0 to 1
+    if (color_list > 1.).any(): color_list = color_list / 255
+
+    #-- add alpha-channel RGB -> RGBA
+    alpha        = np.ones((color_list.shape[0],4))
+    alpha[:,:-1] = color_list
+    color_list   = alpha
+
+    #-- convert to Colormap object
+    if extend == 'ncl':
+        cmap = ListedColormap(color_list[1:-1,:])
+    else:
+        cmap = ListedColormap(color_list)
+
+    #-- define the under, over, and bad colors
+    under = color_list[0,:]
+    over  = color_list[-1,:]
+    bad   = [0.5, 0.5, 0.5, 1.]
+    cmap.set_extremes(under=color_list[0], bad=bad, over=color_list[-1])
+
+    return cmap
+
+
+
 #reading the temperature dataset
 
 dset=xr.open_dataset(data_path+'SAT_anomaly.nc')
@@ -221,9 +323,9 @@ precip_djf.slope=precip_djf.slope*(10**6)
 #importing colorbars using cmap library
 
 import matplotlib as mpl
-import cmaps
-cmap_temp_ncl = cmaps.precip_diff_12lev
-cmap_prec_ncl = cmaps.MPL_BrBG 
+#import cmaps
+cmap_temp_ncl = get_NCL_colormap('precip_diff_12lev')
+cmap_prec_ncl = get_NCL_colormap('MPL_BrBG') 
 cmap_temp_ncl = cmap_temp_ncl(np.arange(cmap_temp_ncl.N))
 locs = [5,6,7]
 
@@ -231,8 +333,8 @@ for n in locs:
     cmap_temp_ncl[n] = np.array([1]) # White -> 125, 126, 127, 128, 129
 cmap_temp_ncl = mpl.colors.ListedColormap(cmap_temp_ncl)
 
-cmap_temp_ncl1 = cmaps.BlueWhiteOrangeRed
-cmap_prec_ncl1 = cmaps.MPL_BrBG 
+cmap_temp_ncl1 = get_NCL_colormap('BlueWhiteOrangeRed')
+cmap_prec_ncl1 = get_NCL_colormap('MPL_BrBG') 
 cmap_temp_ncl1 = cmap_temp_ncl1(np.arange(cmap_temp_ncl1.N))
 locs = [120,121,122]
 
@@ -241,8 +343,8 @@ for n in locs:
 cmap_temp_ncl1 = mpl.colors.ListedColormap(cmap_temp_ncl1)
 cmap_temp_ncl1
 
-cmap_temp_ncl2 = cmaps.GreenMagenta16
-cmap_prec_ncl2 = cmaps.MPL_BrBG 
+cmap_temp_ncl2 = get_NCL_colormap('GreenMagenta16')
+cmap_prec_ncl2 = get_NCL_colormap('MPL_BrBG') 
 cmap_temp_ncl2 = cmap_temp_ncl2(np.arange(cmap_temp_ncl2.N))
 locs = [7,8]
 
@@ -289,11 +391,13 @@ circle = mpath.Path(verts * radius + center)
 # Initialize figure with specific size and DPI
 fig = plt.figure(figsize=[8, 13], dpi=100)
 
+BWOR = get_NCL_colormap('BlueWhiteOrangeRed')
+
 # First subplot: NDJFMA surface air temperature trend on South Polar Stereographic projection
 ax = fig.add_subplot(321, projection=ccrs.SouthPolarStereo(central_longitude=0))
 m = ax.scontourf(lon, lat, temp_djf.slope.where(temp_djf.p_value < 0.1).sel(latitude=slice(-30, -90)),
                  transform=ccrs.PlateCarree(), levels=np.arange(-.8, .9, .1),
-                 cmap=cmaps.BlueWhiteOrangeRed, extend='both')
+                 cmap=BWOR, extend='both')
 ax.set_extent([-180, 180, -90, -30], crs=ccrs.PlateCarree())
 ax.set_boundary(circle, transform=ax.transAxes)  # Apply circular boundary to plot area
 ax.coastlines()
@@ -304,7 +408,7 @@ ax.set_title(title_australia_ndjfma, fontsize=10, fontweight='bold')
 ax1 = fig.add_subplot(322, projection=ccrs.SouthPolarStereo(central_longitude=0))
 m = ax1.scontourf(lon, lat, temp_jja.slope.where(temp_jja.p_value < 0.1).sel(latitude=slice(-30, -90)),
                   transform=ccrs.PlateCarree(), levels=np.arange(-.8, .9, .1),
-                  cmap=cmaps.BlueWhiteOrangeRed, extend='both')
+                  cmap=BWOR, extend='both')
 ax1.set_extent([-180, 180, -90, -30], crs=ccrs.PlateCarree())
 ax1.set_boundary(circle, transform=ax1.transAxes)
 ax1.coastlines()
@@ -313,7 +417,7 @@ ax1.set_title(title_australia_ndjfma, fontsize=10, fontweight='bold')
 
 # Add colorbar for surface air temperature plots
 cb_ax = fig.add_axes([0.93, 0.70, 0.009, 0.15])
-cbar1 = fig.colorbar(m, cax=cb_ax, orientation="vertical", shrink=0.5, cmap=cmaps.BlueWhiteOrangeRed)
+cbar1 = fig.colorbar(m, cax=cb_ax, orientation="vertical", shrink=0.5, cmap=BWOR)
 locator = MaxNLocator(nbins=4, integer=True)  # Locator for tick positions with integer constraint
 cbar1.ax.xaxis.set_major_locator(locator)
 formatter = FormatStrFormatter('%0.1f')  # Format tick label with one decimal place
@@ -326,7 +430,7 @@ cbar1.ax.tick_params(labelsize=11)  # Colorbar tick label font size
 ax2 = fig.add_subplot(323, projection=ccrs.SouthPolarStereo(central_longitude=0))
 m1 = ax2.scontourf(lon, lat, precip_djf.slope.where(precip_djf.p_value < 0.1).sel(latitude=slice(-30, -90)),
                    transform=ccrs.PlateCarree(), levels=np.arange(-4, 5, 1),
-                   cmap=cmaps.precip_diff_12lev, extend='both')
+                   cmap=cmap_temp_ncl, extend='both')
 ax2.set_extent([-180, 180, -90, -30], crs=ccrs.PlateCarree())
 
 # Create meshgrid for wind data coordinates for plotting arrows
@@ -356,7 +460,7 @@ ax2.set_title(title_australia_ndjfma, fontsize=10, fontweight='bold')
 ax3 = fig.add_subplot(324, projection=ccrs.SouthPolarStereo(central_longitude=0))
 m1 = ax3.scontourf(lon, lat, precip_jja.slope.where(precip_jja.p_value < 0.1).sel(latitude=slice(-30, -90)),
                    transform=ccrs.PlateCarree(), levels=np.arange(-4, 5, 1),
-                   cmap=cmaps.precip_diff_12lev, extend='both')
+                   cmap=cmap_temp_ncl, extend='both')
 ax3.set_extent([-180, 180, -90, -30], crs=ccrs.PlateCarree())
 
 lons, lats = np.meshgrid(wind.longitude, wind.latitude[:])
@@ -376,7 +480,7 @@ ax3.set_title(title_australia_ndjfma, fontsize=10, fontweight='bold')
 
 # Add colorbar for precipitation plots
 cc_ax = fig.add_axes([.93, 0.43, 0.009, 0.15])
-cbar = fig.colorbar(m1, cax=cc_ax, orientation="vertical", shrink=0.5, cmap=cmaps.precip_diff_12lev)
+cbar = fig.colorbar(m1, cax=cc_ax, orientation="vertical", shrink=0.5, cmap=cmap_temp_ncl)
 locator = MaxNLocator(integer=True)
 cbar.ax.xaxis.set_major_locator(locator)
 formatter = FormatStrFormatter('%0.1f')

@@ -53,5 +53,5 @@ The script for this figure is `Fig6.py`.
 
 Run `python Fig6.py` and resulting figure will be `Fig6.pdf`.
 
-Requires `sacpy` and `cmaps` packages. `sacpy` is included in the code base and does not need to be installed, but it is available via `pip` or `conda`. `cmaps` is available via `pip` or `conda`.
+Requires `sacpy` package, which is included in the code base and does not need to be installed, but it is available via `pip` or `conda`. Also includes code to use NCL colormaps. This code was copied from [DKRC](https://docs.dkrz.de/doc/visualization/sw/python/source_code/python-matplotlib-read-and-use-ncl-colormaps.html).
 
