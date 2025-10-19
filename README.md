@@ -16,7 +16,7 @@ Set variable `data_path` in each script to the path of the data files downloaded
 
 The script for this figure is `Fig1.ipynb`.
 
-Run all cells. Resulting figure will be `Fig1.pdf`.
+Run all cells, or the script with `jupyter execute Fig1.ipynb`. Resulting figure will be `Fig1.pdf`.
 
 ## Figure 2
 
@@ -28,6 +28,11 @@ Requires `aostools` available [in this directory](https://github.com/SAMworkshop
 
 ## Figure 3
 
+The main script for this figure is `Fig3.py`.
+
+Run `python Fig3.py` and resulting figure will be `Fig3.pdf`.
+
+Requires `aostools` available [in this directory](https://github.com/SAMworkshop2024/aostools) or [this repository](https://github.com/mjucker/aostools).
 
 ## Figure 4
 
@@ -40,7 +45,7 @@ Run  all cells. Resulting figure will be `Fig4.pdf`.
 
 The script for this figure is `Fig5.ipynb`.
 
-Run all cells. Resulting figures will be `Fig5ac.pdf` and `Fig5bd.pdf`.
+Run all cells or exectue notebook. Resulting figures will be `Fig5ac.pdf` and `Fig5bd.pdf`.
 
 ## Figure 6
 
