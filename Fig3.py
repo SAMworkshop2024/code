@@ -5,7 +5,7 @@ from aostools import climate as ac
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 
-data_dir ='../data/'
+data_path ='../data/'
 
 # -----------------------------------------------------------
 # 1) CORRELATION OF SAM WITH SLP
@@ -17,11 +17,11 @@ def ReadSH(ds):
     return ds.sel(lat=slice(-90,-20))
 
 # read sam index netcdf file
-sam = xr.open_dataset(f'{data_dir}/SAM_GW_1m_1979-2023.nc', engine='netcdf4')
+sam = xr.open_dataset(f'{data_path}/SAM_GW_1m_1979-2023.nc', engine='netcdf4')
 
 # get MSLP from ERA5 montlhy
 #msl = xr.open_mfdataset(era_base+'single-levels/monthly-averaged/msl/*/*.nc', preprocess=ReadSH)
-msl = ReadSH(xr.open_dataset(data_dir+'msl_anomaly.nc'))
+msl = ReadSH(xr.open_dataset(data_path+'msl_anomaly.nc'))
 
 # time period to use
 period = slice('1979', '2023')
@@ -57,7 +57,7 @@ corrmap = ac.CloseGlobe(corrmap)
 
 # sam_variances file created by Elio Campitelli
 #dir_elio = '/g/data/v45/ec0044'
-sam_variances = pd.read_csv(f'{data_dir}sam_variances.csv')
+sam_variances = pd.read_csv(f'{data_path}sam_variances.csv')
 
 # Pivot the dataframe to have 'month' as index and 'sym' and 'asym' as columns
 pivot = sam_variances.pivot(index='month', columns='name', values='value')  # still a df
@@ -73,7 +73,7 @@ explained_asym = sam_variances_ds.asym * 100
 # 3) CLIMATE DRIVERS TIME SERIES
 # -----------------------------------------------------------
 # read data of climate drivers time series
-df = pd.read_csv(f'{data_dir}/drivers_timeseries.csv', index_col=0)
+df = pd.read_csv(f'{data_path}/drivers_timeseries.csv', index_col=0)
 
 # convert to xarray.DataSet
 ds_drivers = df.to_xarray()
@@ -221,9 +221,6 @@ ax5.set_title(r'$\bf{e\ }$' + f'{ttl_e}', fontsize=18, loc='left')
 ax5.axhline(0, color='k', linestyle='--', linewidth=1)
 ax5.tick_params(which='major', labelsize=14, length=7)
 ax5.grid(which='major', alpha=0.3, linestyle='dashed')
-
-
-plt.show()
 
 figFile = 'Fig3.pdf'
 fig.savefig(figFile, bbox_inches='tight', format='pdf', dpi=400, facecolor='white', transparent=False)
