@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import xarray as xr
 from aostools import climate as ac
 import matplotlib.pyplot as plt
